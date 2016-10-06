@@ -73,6 +73,7 @@ class Game
 			f.print "#{players[1].guess.join(" ")}\n"
 			f.puts players[0].word
 		}
+		@guesses = 0
 	end
 	def load_game(file_name)
 		open(file_name,'r') { |f|
@@ -131,7 +132,6 @@ def play_game
 	ans = gets.chomp
 	cur_game = Game.new
 	if ans == 'n'
-		
 		cur_game.instructions
 		cur_game.players[0].set_word
 	elsif ans == 'y'
@@ -147,6 +147,7 @@ def play_game
 			puts "Please type a name to save file as"
 			file_name = gets.chomp
 			cur_game.save_game(file_name)
+
 
 		end
 		cur_game.took_guess(cur_player)
