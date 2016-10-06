@@ -65,19 +65,34 @@ class Game
 			players.unshift(AIplayer.new("Computer"))
 		end
 	end
-	def save_game(cur_game)
+	def save_game(game)
 		open(game,'w') { |f|
-			f.puts cur_game.players[0].name
-			f.puts cur_game.players[1].name
-			f.puts cur_game.guesses
-			f.print "#{cur_game.players[1].guess}\n"
-			f.puts cur_game.players[0].word
+			f.puts players[0].name
+			f.puts players[1].name
+			f.puts guesses
+			f.print "#{players[1].guess.join(" ")}\n"
+			f.puts players[0].word
 		}
 	end
 	def load_game(file_name)
 		open(file_name,'r') { |f|
-			
+			p1 = f.readline
+			p2 = f.readline
+			num_guess = f.readline
+			guesses_arr = f.readline
+			word = f.readline
+			if  p1 == "computer"
+			players << AIplayer.new(p1)
+			else
+				players << Player.new(p1)
+			end
+			players << Player.new(p2)
+			@guesses = num_guess.to_i
+			players[1].guess = guesses_arr.split(" ")
+			players[1].guess.pop
+			players[0].word = word.chomp
 		}
+
 	end
 	def draw_board
 
@@ -131,8 +146,8 @@ def play_game
 		if cur_player.guess.last == 'save'
 			puts "Please type a name to save file as"
 			file_name = gets.chomp
-			saved = Game_state.new(file_name)
-			saved.save_game(cur_game)
+			cur_game.save_game(file_name)
+
 		end
 		cur_game.took_guess(cur_player)
 		cur_game.word_guessed?(cur_player)
