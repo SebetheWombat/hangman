@@ -1,10 +1,11 @@
 #Hangman implementation using ruby
 
 class Player
-	attr_accessor :word, :guess, :name
+	attr_accessor :word, :guess, :name, :action
 	def initialize(name)
 		@name = name
 		@guess = []
+		@action = ""
 		@word = ""
 	end
 	#Creates word that needs to be guessed
@@ -16,8 +17,14 @@ class Player
 	end
 	#Takes in user input and adds it to an array of guesses
 	def make_guess
+		@action = ""
 		puts "Make guess"
-		@guess << gets.chomp.downcase
+		user_input = gets.chomp.downcase
+		if user_input == 'save' || user_input == 'quit'
+			@action = user_input
+		else
+			guess << user_input
+		end
 	end
 end
 
@@ -38,12 +45,13 @@ class Game
 	#If guess is incorrect reduce number of guesses by 1
 	def took_guess(player)
 		puts "#{player.name} Your current guesses are #{player.guess}"
-		if !players[0].word.include?(player.guess.last)
+		if !players[0].word.include?(player.guess.last) && player.action == ""
 			@guesses -= 1
 			puts "Sorry! No #{player.guess.last}!"
 		else
 			puts "Yes! There is an #{player.guess.last}!"
 		end
+		puts player.action
 		puts @guesses
 	end
 	#Ends game if number of guesses reaches 0
@@ -73,6 +81,8 @@ class Game
 			f.print "#{players[1].guess.join(" ")}\n"
 			f.puts players[0].word
 		}
+	end
+	def quit
 		@guesses = 0
 	end
 	def load_game(file_name)
@@ -143,12 +153,12 @@ def play_game
 	while(!cur_game.game_over?) do
 		cur_player = cur_game.players[1]
 		cur_player.make_guess
-		if cur_player.guess.last == 'save'
+		if cur_player.action == 'save'
 			puts "Please type a name to save file as"
 			file_name = gets.chomp
 			cur_game.save_game(file_name)
-
-
+		elsif cur_player.action == 'quit'
+			cur_game.quit
 		end
 		cur_game.took_guess(cur_player)
 		cur_game.word_guessed?(cur_player)
