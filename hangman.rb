@@ -20,10 +20,29 @@ class Player
 		@action = ""
 		puts "Make guess"
 		user_input = gets.chomp.downcase
-		if user_input == 'save' || user_input == 'quit'
-			@action = user_input
-		else
-			guess << user_input
+		validate_guess(user_input)
+	end
+
+	def check_duplicate(letter)
+		return true if guess.include?(letter)
+	end
+
+	def validate_guess(letter)
+		while check_duplicate(letter) || letter.length > 1
+			if letter == 'save' || letter == 'quit'
+				@action = letter
+				break
+			end
+			if check_duplicate(letter)
+				puts "You've already guessed #{letter}! Please try again"
+				letter = gets.chomp.downcase
+			else
+				puts "Please only enter in a single character at a time!"
+				letter = gets.chomp.downcase
+			end
+		end
+		if @action == ""
+			guess << letter
 		end
 	end
 end
@@ -48,11 +67,15 @@ class Game
 		if !players[0].word.include?(player.guess.last) && player.action == ""
 			@guesses -= 1
 			puts "Sorry! No #{player.guess.last}!"
-		else
+		elsif player.action == ""
 			puts "Yes! There is an #{player.guess.last}!"
+		elsif player.action == 'save'
+			puts "Saved!"
+		else
+			puts "Goodbye!"
 		end
-		puts player.action
 		puts @guesses
+		draw_board(@guesses)
 	end
 	#Ends game if number of guesses reaches 0
 	def game_over?
@@ -62,8 +85,13 @@ class Game
 	def instructions
 		puts "Hangman: In order to save a life you must guess the correct word.\nGuess one character at a time. Any letter that is not part of the word will decrease available guesses."
 		puts "If an any point you wish to save the game, simply type 'save'"
-		puts "Please select the number of players:"
+		puts "Please select 1 or 2 players:"
 		num_play = gets.chomp.to_i
+		while num_play != 1 && num_play != 2
+			puts num_play
+			puts "Please select only 1 or 2 players"
+			num_play = gets.chomp.to_i
+		end
 		num_play.times do |i|
 			puts "Player #{i}, what is your name?"
 			name = gets.chomp
@@ -100,13 +128,43 @@ class Game
 			players << Player.new(p2)
 			@guesses = num_guess.to_i
 			players[1].guess = guesses_arr.split(" ")
-			players[1].guess.pop
 			players[0].word = word.chomp
 		}
-
 	end
-	def draw_board
+	def draw_board(bodypart)
+		add_bodyparts = [' |      O',' |      | ',' |      |/',' |     \|/',' |     / ',' |     / \\']
+		board = [
+			' --------',
+			' |      |',
+			' |',
+			' |',
+			' |       ',
+			' |',
+			' |',
+			'-+-------'
+		]
 
+		if bodypart <= 5
+			board[2] = add_bodyparts[0]
+		end
+		if bodypart <= 4
+			board[3] = add_bodyparts[1]
+			board[4] = add_bodyparts[1]
+		end
+		if bodypart <= 3
+			board[3] = add_bodyparts[2]
+		end
+		if bodypart <= 2
+			board[3] = add_bodyparts[3]
+		end
+		if bodypart <= 1
+			board[5] = add_bodyparts[4]
+		end
+		if bodypart == 0
+			board[5] = add_bodyparts[5]
+		end
+
+		puts board
 	end
 end
 
@@ -166,7 +224,4 @@ def play_game
 	puts "Game Over!"
 end
 
-def game_loop
-	
-end
 play_game()
