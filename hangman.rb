@@ -1,4 +1,4 @@
-#Hangman implementation using ruby
+#TODO: Holy speghetti and meatballs Batman! You've got to refactor!
 
 class Player
 	attr_accessor :word, :guess, :name, :action
@@ -28,7 +28,7 @@ class Player
 	end
 
 	def validate_guess(letter)
-		while check_duplicate(letter) || letter.length > 1
+		while check_duplicate(letter) || letter.length > 1 || (letter =~ /[^[a-z]]/) == 0
 			if letter == 'save' || letter == 'quit'
 				@action = letter
 				break
@@ -36,11 +36,15 @@ class Player
 			if check_duplicate(letter)
 				puts "You've already guessed #{letter}! Please try again"
 				letter = gets.chomp.downcase
+			elsif (letter =~ /[^[a-z]]/) == 0
+				puts "Please only enter a single letter"
+				letter = gets.chomp.downcase
 			else
 				puts "Please only enter in a single character at a time!"
 				letter = gets.chomp.downcase
 			end
 		end
+
 		if @action == ""
 			guess << letter
 		end
@@ -55,7 +59,6 @@ class Game
 	end
 	#Checks to see if the word can be created with all guessed letters
 	def word_guessed?(player)
-		puts "#{@players[0].word}  #{@players[0].word.split("") - player.guess}"
 		if (@players[0].word.split("") - player.guess).empty?
 			puts "#{player.name} You Win! The word was #{players[0].word}"
 			@guesses = 0
@@ -64,17 +67,14 @@ class Game
 	#If guess is incorrect reduce number of guesses by 1
 	def took_guess(player)
 		puts "#{player.name} Your current guesses are #{player.guess}"
-		if !players[0].word.include?(player.guess.last) && player.action == ""
+		if player.action == 'save'
+			puts "Saved!"
+		elsif !players[0].word.include?(player.guess.last) && player.action == ""
 			@guesses -= 1
 			puts "Sorry! No #{player.guess.last}!"
 		elsif player.action == ""
 			puts "Yes! There is an #{player.guess.last}!"
-		elsif player.action == 'save'
-			puts "Saved!"
-		else
-			puts "Goodbye!"
 		end
-		puts @guesses
 		draw_board(@guesses)
 	end
 	#Ends game if number of guesses reaches 0
@@ -88,7 +88,6 @@ class Game
 		puts "Please select 1 or 2 players:"
 		num_play = gets.chomp.to_i
 		while num_play != 1 && num_play != 2
-			puts num_play
 			puts "Please select only 1 or 2 players"
 			num_play = gets.chomp.to_i
 		end
@@ -138,7 +137,7 @@ class Game
 			' |      |',
 			' |',
 			' |',
-			' |       ',
+			' |',
 			' |',
 			' |',
 			'-+-------'
@@ -197,7 +196,7 @@ end
 
 def play_game
 	puts "Load game? (y/n)"
-	ans = gets.chomp
+	ans = gets.chomp.downcase
 	cur_game = Game.new
 	if ans == 'n'
 		cur_game.instructions
@@ -207,6 +206,10 @@ def play_game
 		game_to_load = gets.chomp
 		cur_game.load_game(game_to_load)
 	else
+		while ans != 'n' && ans != 'y'
+			puts "Please only enter y or n"
+			ans = gets.chomp.downcase
+		end
 	end
 	while(!cur_game.game_over?) do
 		cur_player = cur_game.players[1]
@@ -216,7 +219,7 @@ def play_game
 			file_name = gets.chomp
 			cur_game.save_game(file_name)
 		elsif cur_player.action == 'quit'
-			cur_game.quit
+			break
 		end
 		cur_game.took_guess(cur_player)
 		cur_game.word_guessed?(cur_player)
